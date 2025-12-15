@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>高职学生早餐食用情况调查</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- QRCode.js 库 -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f9ff;
+            color: #333;
+            line-height: 1.5;
+            padding: 15px;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            width: 100%;
+            margin: 0 auto;
+            max-width: 600px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 15px;
+            background: linear-gradient(135deg, #1a6dcc 0%, #4a9eff 100%);
+            color: white;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(26, 109, 204, 0.2);
+        }
+        
+        h1 {
+            font-size: 1.6rem;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .qrcode-section {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+        
+        .qrcode-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 15px 0;
+        }
+        
+        #qrcode {
+            width: 180px;
+            height: 180px;
+            margin: 15px auto;
+            background-color: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .qrcode-instruction {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 10px;
+            max-width: 300px;
+        }
+        
+        .survey-section {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        h2 {
+            color: #1a6dcc;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eef5ff;
+            font-size: 1.3rem;
+        }
+        
+        h3 {
+            color: #333;
+            margin: 20px 0 12px 0;
+            font-size: 1.1rem;
+        }
+        
+        .question {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed #eaeaea;
+        }
+        
+        .question:last-child {
+            border-bottom: none;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #444;
+            font-size: 0.95rem;
+        }
+        
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+        }
+        
+        .option:hover {
+            background-color: #f0f7ff;
+        }
+        
+        input[type="radio"], input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #1a6dcc;
+            flex-shrink: 0;
+        }
+        
+        .option label {
+            margin-bottom: 0;
+            font-weight: normal;
+            flex-grow: 1;
+        }
+        
+        select, input[type="text"], textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border 0.3s;
+        }
+        
+        select:focus, input[type="text"]:focus, textarea:focus {
+            border-color: #1a6dcc;
+            outline: none;
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+        
+        button {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+        
+        #submitBtn {
+            background-color: #1a6dcc;
+            color: white;
+        }
+        
+        #submitBtn:hover {
+            background-color: #1457a8;
+        }
+        
+        #resetBtn {
+            background-color: #f0f5ff;
+            color: #1a6dcc;
+            border: 1px solid #c5d9ff;
+        }
+        
+        #resetBtn:hover {
+            background-color: #e1ebff;
+        }
+        
+        .results-section {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .chart-selector {
+            margin-bottom: 15px;
+        }
+        
+        .chart-selector select {
+            width: 100%;
+            max-width: 100%;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 280px;
+            margin-bottom: 20px;
+        }
+        
+        .stats-summary {
+            background-color: #f9fbff;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            border-left: 4px solid #1a6dcc;
+        }
+        
+        .stats-summary h3 {
+            margin-top: 0;
+            font-size: 1rem;
+        }
+        
+        .stats-summary p {
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .counter {
+            display: inline-block;
+            background-color: #1a6dcc;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin: 0 3px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 15px;
+            color: #666;
+            font-size: 0.8rem;
+            border-top: 1px solid #eee;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            left: 20px;
+            background-color: #4caf50;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            display: none;
+            text-align: center;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 14px 10px;
+            text-align: center;
+            background-color: #eef5ff;
+            color: #1a6dcc;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            font-size: 0.95rem;
+        }
+        
+        .tab.active {
+            background-color: #1a6dcc;
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .data-export {
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .data-export button {
+            max-width: 200px;
+            background-color: #06d6a0;
+            color: white;
+        }
+        
+        .school-badge {
+            display: inline-block;
+            background-color: #ff6b6b;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.7rem;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+        
+        @media (min-width: 768px) {
+            body {
+                padding: 20px;
+            }
+            
+            .qrcode-section {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                text-align: left;
+            }
+            
+            .qrcode-container {
+                margin: 0;
+            }
+            
+            .qrcode-instruction {
+                text-align: left;
+                margin-left: 20px;
+                max-width: none;
+                flex-grow: 1;
+            }
+        }
+        
+        /* 移动端优化 */
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.4rem;
+            }
+            
+            .survey-section, .results-section, .qrcode-section {
+                padding: 15px;
+            }
+            
+            .buttons {
+                flex-direction: column;
+            }
+            
+            .option {
+                padding: 8px;
+            }
+            
+            .chart-container {
+                height: 240px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>高职学生早餐食用情况调查 <span class="school-badge">手机版</span></h1>
+            <p class="subtitle">扫描二维码即可填写问卷，数据实时汇总统计</p>
+        </header>
+        
+        <!-- 标签页导航 -->
+        <div class="tabs">
+            <button class="tab active" data-tab="qrcode-tab">扫码填写</button>
+            <button class="tab" data-tab="survey-tab">填写问卷</button>
+            <button class="tab" data-tab="results-tab">查看统计</button>
+        </div>
+        
+        <!-- 二维码标签页 -->
+        <div id="qrcode-tab" class="tab-content active">
+            <section class="qrcode-section">
+                <div class="qrcode-container">
+                    <h3>手机扫码填写问卷</h3>
+                    <div id="qrcode"></div>
+                    <div class="qrcode-instruction">
+                        <p><strong>使用说明：</strong></p>
+                        <p>1. 使用手机微信、支付宝或浏览器扫描上方二维码</p>
+                        <p>2. 在手机上直接填写问卷并提交</p>
+                        <p>3. 提交后可在"查看统计"中查看实时结果</p>
+                        <p>4. 数据将自动保存，多设备可同时填写</p>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="survey-section">
+                <h3>问卷填写指引</h3>
+                <div class="question">
+                    <p>1. 本问卷共9个问题，大约需要2-3分钟完成</p>
+                    <p>2. 所有问题均为匿名回答，不收集个人信息</p>
+                    <p>3. 提交后可查看实时统计结果</p>
+                    <p>4. 建议使用手机扫描二维码填写以获得最佳体验</p>
+                </div>
+                <div class="data-export">
+                    <button id="exportDataBtn">导出数据(CSV格式)</button>
+                </div>
+            </section>
+        </div>
+        
+        <!-- 问卷填写标签页 -->
+        <div id="survey-tab" class="tab-content">
+            <section class="survey-section">
+                <h2>问卷填写</h2>
+                <form id="surveyForm">
+                    <!-- 问题1：性别 -->
+                    <div class="question">
+                        <label>1. 您的性别：</label>
+                        <div class="options">
+                            <div class="option">
+                                <input type="radio" id="male" name="gender" value="男" required>
+                                <label for="male">男</label>
+                            </div>
+                            <div class="option">
+                                <input type="radio" id="female" name="gender" value="女" required>
+                                <label for="female">女</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 问题2：年级（调整为高职三年制） -->
+                    <div class="question">
+                        <label>2. 您所在的年级：</label>
+                        <div class="options">
+                            <div class="option">
+                                <input type="radio" id="freshman" name="grade" value="一年级" required>
+                                <label for="freshman">一年级</label>
+                            </div>
+                            <div class="option">
+                                <input type="radio" id="sophomore" name="grade" value="二年级" required>
+                                <label for="sophomore">二年级</label>
+                            </div>
+                            <div class="option">
+                                <input type="radio" id="junior" name="grade" value="三年级" required>
+                                <label for="junior">三年级</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 问题3：吃早餐频率 -->
+                    <div class="question">
+                        <label>3. 您每周吃早餐的频率：</label>
+                        <div class="options">
+                            <div class="option">
+                                <input type="radio" id="daily" name="frequency" value="每天" required>
+                                <label for="daily">每天</label>
+                            </div>
+                            <div class="option">
+                                <input type="radio" id="often" name="frequency" value="4-6天" required>
+                                <label for="often">每周4-6天</label>
+                            </div>
+                            <div class="option">
+                                <input type="radio" id="sometimes" name="frequency" value="1-3天" required>
+                                <label for="sometimes">每周1-3天</label>
+                            </div>
+                            <div class="option">
+                                <input type="radio" id="never" name="frequency" value="几乎不吃" required>
+                                <label for="never">几乎不吃</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 问题4：早餐时间 -->
+                    <div class="question">
+                        <label>4. 您通常在什么时间吃早餐：</label>
+                        <div class="options">
+                            <div class="option">
+                                <input type="radio" id="before7" name="time" value="7点前" required>
+                                <label for="before7">7:00之前</label>
+                            </div>
+                            <div class="option">
+                                <input type="radio" id="7to8" name="time" value="7-8点" required>
+                                <label for="7to8">7:00-8:00</label>
+                            </div>
+                            <div class="option">
+                                <input type="radio" id="8to9" name="time" value="8-9点" required>
+                                <label for="8to9">8:00-9:00</label>
+                            </div>
+                            <div class="option">
+                                <input type="radio" id="after9" name="time" value="9点后" required>
+                                <label for="after9">9:00以后</label>
+                            </div>
+                            <div class="option">
+                                <input type="radio" id="no-fixed" name="time" value="时间不固定" required>
+                                <label for="no-fixed">时间不固定</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 问题5：早餐类型 -->
+                    <div class="question">
+                        <label>5. 您通常选择的早餐类型（可多选）：</label>
+                        <div class="options">
+                            <div class="option">
+                                <input type="checkbox" id="porridge" name="type" value="粥/豆浆">
+                                <label for="porridge">粥/豆浆</label>
+                            </div>
+                            <div class="option">
+                                <input type="checkbox" id="bread" name="type" value="面包/糕点">
+                                <label for="bread">面包/糕点</label>
+                            </div>
+                            <div class="option">
+                                <input type="checkbox" id="noodles" name="type" value="面条/米粉">
+                                <label for="noodles">面条/米粉</label>
+                            </div>
+                            <div class="option">
+                                <input type="checkbox" id="milk" name="type" value="牛奶/酸奶">
+                                <label for="milk">牛奶/酸奶</label>
+                            </div>
+                            <div class="option">
+                                <input type="checkbox" id="egg" name="type" value="鸡蛋">
+                                <label for="egg">鸡蛋</label>
+                            </div>
+                            <div class="option">
+                                <input type="checkbox" id="fruit" name="type" value="水果">
+                                <label for="fruit">水果</label>
+                            </div>
+                            <div class="option">
+                                <input type="checkbox" id="other-type" name="type" value="其他">
+                                <label for="other-type">其他</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 问题6：早餐花费 -->
+                    <div class="question">
+                        <label>6. 您平均每顿早餐花费：</label>
+                        <div class="options">
+                            <div class="option">
+                                <input type="radio" id="cost1" name="cost" value="5元以下" required>
+                                <label for="cost1">5元以下</label>
+                            </div>
+                            <div class="option">
+                                <input type="radio" id="cost2" name="cost" value="5-10元" required>
+                                <label for="cost2">5-10元</label>
+                            </div>
+                            <div class="option">
+                                <input type="radio" id="cost3" name="cost" value="10-15元" required>
+                                <label for="cost3">10-15元</label>
+                            </div>
+                            <div class="option">
+                                <input type="radio" id="cost4" name="cost" value="15元以上" required>
+                                <label for="cost4">15元以上</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 问题7：不吃早餐原因 -->
+                    <div class="question">
+                        <label>7. 如果您不吃早餐，主要原因是什么（可多选）：</label>
+                        <div class="options">
+                            <div class="option">
+                                <input type="checkbox" id="reason1" name="reason" value="没时间">
+                                <label for="reason1">早上没时间</label>
+                            </div>
+                            <div class="option">
+                                <input type="checkbox" id="reason2" name="reason" value="没食欲">
+                                <label for="reason2">早上没食欲</label>
+                            </div>
+                            <div class="option">
+                                <input type="checkbox" id="reason3" name="reason" value="减肥">
+                                <label for="reason3">控制体重/减肥</label>
+                            </div>
+                            <div class="option">
+                                <input type="checkbox" id="reason4" name="reason" value="食堂不便">
+                                <label for="reason4">食堂早餐不方便/不合口味</label>
+                            </div>
+                            <div class="option">
+                                <input type="checkbox" id="reason5" name="reason" value="睡过头">
+                                <label for="reason5">睡过头</label>
+                            </div>
+                            <div class="option">
+                                <input type="checkbox" id="reason6" name="reason" value="经济原因">
+                                <label for="reason6">经济原因</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 问题8：早餐重要性 -->
+                    <div class="question">
+                        <label>8. 您认为早餐的重要性：</label>
+                        <div class="options">
+                            <div class="option">
+                                <input type="radio" id="importance1" name="importance" value="非常重要" required>
+                                <label for="importance1">非常重要</label>
+                            </div>
+                            <div class="option">
+                                <input type="radio" id="importance2" name="importance" value="比较重要" required>
+                                <label for="importance2">比较重要</label>
+                            </div>
+                            <div class="option">
+                                <input type="radio" id="importance3" name="importance" value="一般" required>
+                                <label for="importance3">一般</label>
+                            </div>
+                            <div class="option">
+                                <input type="radio" id="importance4" name="importance" value="不重要" required>
+                                <label for="importance4">不重要</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 问题9：改进建议 -->
+                    <div class="question">
+                        <label>9. 您对学校早餐供应有什么建议：</label>
+                        <textarea id="suggestion" name="suggestion" rows="4" placeholder="请输入您的建议..."></textarea>
+                    </div>
+                    
+                    <div class="buttons">
+                        <button type="submit" id="submitBtn">提交问卷</button>
+                        <button type="button" id="resetBtn">重置问卷</button>
+                    </div>
+                </form>
+            </section>
+        </div>
+        
+        <!-- 统计结果标签页 -->
+        <div id="results-tab" class="tab-content">
+            <section class="results-section">
+                <h2>实时统计结果</h2>
+                
+                <div class="chart-selector">
+                    <label for="chartSelect">选择统计图表：</label>
+                    <select id="chartSelect">
+                        <option value="frequency">早餐食用频率统计</option>
+                        <option value="grade">年级分布统计</option>
+                        <option value="time">早餐食用时间统计</option>
+                        <option value="cost">早餐花费统计</option>
+                        <option value="importance">早餐重要性认知</option>
+                        <option value="type">早餐类型偏好</option>
+                        <option value="reason">不吃早餐原因</option>
+                    </select>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="surveyChart"></canvas>
+                </div>
+                
+                <div class="stats-summary">
+                    <h3>数据概览</h3>
+                    <p>已收集问卷：<span class="counter" id="totalResponses">0</span>份</p>
+                    <p>性别比例：<span id="genderRatio">男:0 女:0</span></p>
+                    <p>年级分布：<span id="gradeDistribution">一年级:0 二年级:0 三年级:0</span></p>
+                    <p>每周平均早餐天数：<span id="avgFrequency">0</span>天</p>
+                    <p>最常见的早餐类型：<span id="commonType">暂无数据</span></p>
+                </div>
+                
+                <div class="data-export">
+                    <button id="refreshDataBtn">刷新数据</button>
+                </div>
+            </section>
+        </div>
+        
+        <footer>
+            <p>© 2023 高职学生早餐食用情况调查 | 本调查仅用于学术研究，所有数据均为匿名收集</p>
+            <p>提示：将此页面部署到服务器后，多设备可同时扫码填写并查看实时统计</p>
+        </footer>
+        
+        <div class="notification" id="notification">
+            问卷提交成功！感谢您的参与！
+        </div>
+    </div>
+
+    <script>
+        // 存储所有调查数据 - 使用localStorage模拟数据共享
+        // 注意：在实际部署中，应使用服务器端数据库存储数据
+        let surveyData = [];
+        let surveyChart;
+        
+        // 图表颜色配置
+        const chartColors = [
+            '#1a6dcc', '#4a9eff', '#6cb2ff', '#8ec5ff', '#b0d8ff',
+            '#ff6b6b', '#ff9e6d', '#ffd166', '#06d6a0', '#118ab2'
+        ];
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化标签页功能
+            initTabs();
+            
+            // 生成当前页面的二维码
+            generateQRCode();
+            
+            // 尝试从localStorage加载之前保存的数据
+            loadSurveyData();
+            
+            // 初始化图表
+            initChart();
+            
+            // 设置表单提交事件
+            document.getElementById('surveyForm').addEventListener('submit', handleSubmit);
+            
+            // 设置重置按钮事件
+            document.getElementById('resetBtn').addEventListener('click', resetForm);
+            
+            // 设置图表选择器事件
+            document.getElementById('chartSelect').addEventListener('change', updateCharts);
+            
+            // 设置刷新数据按钮事件
+            document.getElementById('refreshDataBtn').addEventListener('click', function() {
+                loadSurveyData();
+                updateCharts();
+                showNotification('数据已刷新！', '#1a6dcc');
+            });
+            
+            // 设置导出数据按钮事件
+            document.getElementById('exportDataBtn').addEventListener('click', exportDataToCSV);
+            
+            // 初始更新图表
+            updateCharts();
+        });
+        
+        // 初始化标签页功能
+        function initTabs() {
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // 移除所有标签的active类
+                    tabs.forEach(t => t.classList.remove('active'));
+                    // 添加当前标签的active类
+                    this.classList.add('active');
+                    
+                    // 隐藏所有标签内容
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    
+                    // 显示当前标签内容
+                    document.getElementById(tabId).classList.add('active');
+                    
+                    // 如果是统计标签页，刷新图表
+                    if (tabId === 'results-tab') {
+                        updateCharts();
+                    }
+                });
+            });
+        }
+        
+        // 生成当前页面的二维码
+        function generateQRCode() {
+            // 获取当前页面的完整URL
+            const pageUrl = window.location.href;
+            
+            // 生成二维码
+            const qrcodeElement = document.getElementById('qrcode');
+            qrcodeElement.innerHTML = ''; // 清空之前的内容
+            
+            QRCode.toCanvas(qrcodeElement, pageUrl, {
+                width: 180,
+                height: 180,
+                colorDark: "#1a6dcc",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            }, function(error) {
+                if (error) {
+                    console.error('生成二维码失败:', error);
+                    qrcodeElement.innerHTML = '<p style="color: red;">二维码生成失败，请手动访问：<br>' + pageUrl + '</p>';
+                }
+            });
+        }
+        
+        // 加载调查数据
+        function loadSurveyData() {
+            const savedData = localStorage.getItem('breakfastSurveyData');
+            if (savedData) {
+                surveyData = JSON.parse(savedData);
+                updateTotalResponses();
+            }
+        }
+        
+        // 初始化图表
+        function initChart() {
+            const ctx = document.getElementById('surveyChart').getContext('2d');
+            
+            surveyChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['暂无数据'],
+                    datasets: [{
+                        label: '选择人数',
+                        data: [0],
+                        backgroundColor: chartColors[0],
+                        borderColor: '#1a6dcc',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1,
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            enabled: true,
+                            bodyFont: {
+                                size: 12
+                            },
+                            titleFont: {
+                                size: 12
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 处理表单提交
+        function handleSubmit(e) {
+            e.preventDefault();
+            
+            // 收集表单数据
+            const formData = new FormData(e.target);
+            const data = {};
+            
+            // 处理单选问题
+            data.gender = formData.get('gender');
+            data.grade = formData.get('grade');
+            data.frequency = formData.get('frequency');
+            data.time = formData.get('time');
+            data.cost = formData.get('cost');
+            data.importance = formData.get('importance');
+            data.suggestion = formData.get('suggestion');
+            
+            // 处理多选问题
+            data.type = formData.getAll('type');
+            data.reason = formData.getAll('reason');
+            
+            // 添加时间戳
+            data.timestamp = new Date().toLocaleString('zh-CN');
+            
+            // 添加到数据数组
+            surveyData.push(data);
+            
+            // 保存到localStorage
+            localStorage.setItem('breakfastSurveyData', JSON.stringify(surveyData));
+            
+            // 更新UI
+            updateTotalResponses();
+            updateCharts();
+            
+            // 显示通知
+            showNotification('问卷提交成功！感谢您的参与！', '#4caf50');
+            
+            // 切换到统计结果标签页
+            document.querySelector('[data-tab="results-tab"]').click();
+            
+            // 重置表单
+            e.target.reset();
+        }
+        
+        // 更新总响应数
+        function updateTotalResponses() {
+            document.getElementById('totalResponses').textContent = surveyData.length;
+            
+            // 更新性别比例
+            const maleCount = surveyData.filter(item => item.gender === '男').length;
+            const femaleCount = surveyData.filter(item => item.gender === '女').length;
+            document.getElementById('genderRatio').textContent = `男:${maleCount} 女:${femaleCount}`;
+            
+            // 更新年级分布
+            const gradeCounts = {
+                '一年级': surveyData.filter(item => item.grade === '一年级').length,
+                '二年级': surveyData.filter(item => item.grade === '二年级').length,
+                '三年级': surveyData.filter(item => item.grade === '三年级').length
+            };
+            document.getElementById('gradeDistribution').textContent = 
+                `一年级:${gradeCounts['一年级']} 二年级:${gradeCounts['二年级']} 三年级:${gradeCounts['三年级']}`;
+            
+            // 更新平均频率
+            let totalDays = 0;
+            surveyData.forEach(item => {
+                switch(item.frequency) {
+                    case '每天': totalDays += 7; break;
+                    case '4-6天': totalDays += 5; break;
+                    case '1-3天': totalDays += 2; break;
+                    case '几乎不吃': totalDays += 0; break;
+                }
+            });
+            
+            const avgDays = surveyData.length > 0 ? (totalDays / surveyData.length).toFixed(1) : 0;
+            document.getElementById('avgFrequency').textContent = avgDays;
+            
+            // 更新最常见早餐类型
+            const typeCounts = {};
+            surveyData.forEach(item => {
+                if (item.type && item.type.length > 0) {
+                    item.type.forEach(type => {
+                        typeCounts[type] = (typeCounts[type] || 0) + 1;
+                    });
+                }
+            });
+            
+            let mostCommonType = '暂无数据';
+            let maxCount = 0;
+            for (const [type, count] of Object.entries(typeCounts)) {
+                if (count > maxCount) {
+                    maxCount = count;
+                    mostCommonType = type;
+                }
+            }
+            document.getElementById('commonType').textContent = mostCommonType;
+        }
+        
+        // 更新图表
+        function updateCharts() {
+            const chartType = document.getElementById('chartSelect').value;
+            
+            let labels = [];
+            let data = [];
+            let chartTitle = '';
+            let chartColor = chartColors[0];
+            
+            switch(chartType) {
+                case 'frequency':
+                    chartTitle = '早餐食用频率统计';
+                    const frequencyOptions = ['每天', '4-6天', '1-3天', '几乎不吃'];
+                    labels = frequencyOptions;
+                    data = frequencyOptions.map(option => 
+                        surveyData.filter(item => item.frequency === option).length
+                    );
+                    chartColor = chartColors[0];
+                    break;
+                    
+                case 'grade':
+                    chartTitle = '年级分布统计';
+                    const gradeOptions = ['一年级', '二年级', '三年级'];
+                    labels = gradeOptions;
+                    data = gradeOptions.map(option => 
+                        surveyData.filter(item => item.grade === option).length
+                    );
+                    chartColor = chartColors[1];
+                    break;
+                    
+                case 'time':
+                    chartTitle = '早餐食用时间统计';
+                    const timeOptions = ['7点前', '7-8点', '8-9点', '9点后', '时间不固定'];
+                    labels = timeOptions;
+                    data = timeOptions.map(option => 
+                        surveyData.filter(item => item.time === option).length
+                    );
+                    chartColor = chartColors[2];
+                    break;
+                    
+                case 'cost':
+                    chartTitle = '早餐花费统计';
+                    const costOptions = ['5元以下', '5-10元', '10-15元', '15元以上'];
+                    labels = costOptions;
+                    data = costOptions.map(option => 
+                        surveyData.filter(item => item.cost === option).length
+                    );
+                    chartColor = chartColors[3];
+                    break;
+                    
+                case 'importance':
+                    chartTitle = '早餐重要性认知';
+                    const importanceOptions = ['非常重要', '比较重要', '一般', '不重要'];
+                    labels = importanceOptions;
+                    data = importanceOptions.map(option => 
+                        surveyData.filter(item => item.importance === option).length
+                    );
+                    chartColor = chartColors[4];
+                    break;
+                    
+                case 'type':
+                    chartTitle = '早餐类型偏好';
+                    const typeOptions = ['粥/豆浆', '面包/糕点', '面条/米粉', '牛奶/酸奶', '鸡蛋', '水果', '其他'];
+                    labels = typeOptions;
+                    data = typeOptions.map(option => {
+                        let count = 0;
+                        surveyData.forEach(item => {
+                            if (item.type && item.type.includes(option)) {
+                                count++;
+                            }
+                        });
+                        return count;
+                    });
+                    chartColor = chartColors[5];
+                    break;
+                    
+                case 'reason':
+                    chartTitle = '不吃早餐原因';
+                    const reasonOptions = ['没时间', '没食欲', '减肥', '食堂不便', '睡过头', '经济原因'];
+                    labels = reasonOptions;
+                    data = reasonOptions.map(option => {
+                        let count = 0;
+                        surveyData.forEach(item => {
+                            if (item.reason && item.reason.includes(option)) {
+                                count++;
+                            }
+                        });
+                        return count;
+                    });
+                    chartColor = chartColors[6];
+                    break;
+            }
+            
+            // 更新图表
+            surveyChart.data.labels = labels;
+            surveyChart.data.datasets[0].data = data;
+            surveyChart.data.datasets[0].label = chartTitle;
+            surveyChart.data.datasets[0].backgroundColor = chartColor;
+            surveyChart.update();
+        }
+        
+        // 显示通知
+        function showNotification(message, color = '#4caf50') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.backgroundColor = color;
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+        
+        // 重置表单
+        function resetForm() {
+            document.getElementById('surveyForm').reset();
+            showNotification('表单已重置！', '#ff6b6b');
+        }
+        
+        // 导出数据为CSV格式
+        function exportDataToCSV() {
+            if (surveyData.length === 0) {
+                showNotification('暂无数据可导出！', '#ff6b6b');
+                return;
+            }
+            
+            // 定义CSV表头
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+            csvContent += "序号,性别,年级,早餐频率,早餐时间,早餐类型,早餐花费,不吃早餐原因,早餐重要性,建议,提交时间\n";
+            
+            // 添加数据行
+            surveyData.forEach((item, index) => {
+                const row = [
+                    index + 1,
+                    item.gender || '',
+                    item.grade || '',
+                    item.frequency || '',
+                    item.time || '',
+                    Array.isArray(item.type) ? item.type.join(';') : '',
+                    item.cost || '',
+                    Array.isArray(item.reason) ? item.reason.join(';') : '',
+                    item.importance || '',
+                    item.suggestion || '',
+                    item.timestamp || ''
+                ].map(field => `"${field}"`).join(',');
+                
+                csvContent += row + "\n";
+            });
+            
+            // 创建下载链接
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "高职学生早餐调查数据.csv");
+            document.body.appendChild(link);
+            
+            // 触发下载
+            link.click();
+            document.body.removeChild(link);
+            
+            showNotification('数据已导出为CSV文件！', '#06d6a0');
+        }
+        
+        // 添加示例数据函数（用于演示）
+        function addSampleData() {
+            const sampleData = [
+                {
+                    gender: '男',
+                    grade: '一年级',
+                    frequency: '每天',
+                    time: '7-8点',
+                    type: ['粥/豆浆', '鸡蛋'],
+                    cost: '5-10元',
+                    reason: [],
+                    importance: '非常重要',
+                    suggestion: '希望食堂能提供更多种类的早餐',
+                    timestamp: '2023-10-10 08:30:00'
+                },
+                {
+                    gender: '女',
+                    grade: '二年级',
+                    frequency: '4-6天',
+                    time: '8-9点',
+                    type: ['面包/糕点', '牛奶/酸奶'],
+                    cost: '5元以下',
+                    reason: ['没时间'],
+                    importance: '比较重要',
+                    suggestion: '食堂早餐时间可以延长一些',
+                    timestamp: '2023-10-11 09:15:00'
+                }
+            ];
+            
+            // 添加示例数据
+            sampleData.forEach(data => {
+                surveyData.push(data);
+            });
+            
+            // 保存到localStorage
+            localStorage.setItem('breakfastSurveyData', JSON.stringify(surveyData));
+            
+            // 更新UI
+            updateTotalResponses();
+            updateCharts();
+            
+            showNotification('已添加2份示例数据！', '#4a9eff');
+        }
+    </script>
+    
+    <!-- 添加示例数据按钮（仅用于演示，实际使用时可移除） -->
+    <div style="position: fixed; bottom: 20px; left: 20px; z-index: 1000;">
+        <button onclick="addSampleData()" style="background-color: #4a9eff; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-size: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+            添加示例数据
+        </button>
+    </div>
+</body>
+</html>
