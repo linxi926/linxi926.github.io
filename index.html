@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>高职学生早餐食用情况调查</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- QRCode.js 库 -->
+    <!-- QRCode.js 库 - 添加多个备用源 -->
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js" defer onerror="loadBackupQRCode()"></script>
     <style>
         * {
             margin: 0;
@@ -75,6 +76,41 @@
             padding: 10px;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #qrcode canvas, #qrcode img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        
+        .qrcode-error {
+            color: #ff6b6b;
+            font-size: 0.9rem;
+            padding: 10px;
+            text-align: center;
+        }
+        
+        .url-display {
+            background-color: #f0f7ff;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 10px;
+            word-break: break-all;
+            font-size: 0.85rem;
+            border: 1px dashed #1a6dcc;
+        }
+        
+        .url-display a {
+            color: #1a6dcc;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .url-display a:hover {
+            text-decoration: underline;
         }
         
         .qrcode-instruction {
@@ -100,20 +136,10 @@
             font-size: 1.3rem;
         }
         
-        h3 {
-            color: #333;
-            margin: 20px 0 12px 0;
-            font-size: 1.1rem;
-        }
-        
         .question {
             margin-bottom: 20px;
             padding-bottom: 15px;
             border-bottom: 1px dashed #eaeaea;
-        }
-        
-        .question:last-child {
-            border-bottom: none;
         }
         
         label {
@@ -156,23 +182,20 @@
             flex-grow: 1;
         }
         
-        select, input[type="text"], textarea {
+        textarea {
             width: 100%;
             padding: 12px 15px;
             border: 1px solid #ddd;
             border-radius: 8px;
             font-size: 1rem;
             transition: border 0.3s;
-        }
-        
-        select:focus, input[type="text"]:focus, textarea:focus {
-            border-color: #1a6dcc;
-            outline: none;
-        }
-        
-        textarea {
             min-height: 100px;
             resize: vertical;
+        }
+        
+        textarea:focus {
+            border-color: #1a6dcc;
+            outline: none;
         }
         
         .buttons {
@@ -240,11 +263,6 @@
             padding: 15px;
             margin-top: 15px;
             border-left: 4px solid #1a6dcc;
-        }
-        
-        .stats-summary h3 {
-            margin-top: 0;
-            font-size: 1rem;
         }
         
         .stats-summary p {
@@ -342,6 +360,16 @@
             vertical-align: middle;
         }
         
+        .qrcode-fallback {
+            text-align: center;
+            padding: 15px;
+        }
+        
+        .qrcode-fallback button {
+            background-color: #4a9eff;
+            margin-top: 10px;
+        }
+        
         @media (min-width: 768px) {
             body {
                 padding: 20px;
@@ -366,7 +394,6 @@
             }
         }
         
-        /* 移动端优化 */
         @media (max-width: 480px) {
             h1 {
                 font-size: 1.4rem;
@@ -409,7 +436,20 @@
             <section class="qrcode-section">
                 <div class="qrcode-container">
                     <h3>手机扫码填写问卷</h3>
-                    <div id="qrcode"></div>
+                    <div id="qrcode">
+                        <!-- 二维码将在这里生成 -->
+                        <div class="qrcode-loading">正在生成二维码...</div>
+                    </div>
+                    
+                    <div id="qrcode-fallback" class="qrcode-fallback" style="display: none;">
+                        <p class="qrcode-error">二维码生成失败，请使用以下链接：</p>
+                        <div class="url-display">
+                            <span id="page-url">加载中...</span>
+                        </div>
+                        <button id="copy-url-btn">复制链接</button>
+                        <p class="qrcode-instruction">将链接发送到手机，或在手机浏览器中打开</p>
+                    </div>
+                    
                     <div class="qrcode-instruction">
                         <p><strong>使用说明：</strong></p>
                         <p>1. 使用手机微信、支付宝或浏览器扫描上方二维码</p>
@@ -682,6 +722,7 @@
                 
                 <div class="data-export">
                     <button id="refreshDataBtn">刷新数据</button>
+                    <button id="clearDataBtn" style="background-color: #ff6b6b; margin-left: 10px;">清空数据</button>
                 </div>
             </section>
         </div>
@@ -697,8 +738,7 @@
     </div>
 
     <script>
-        // 存储所有调查数据 - 使用localStorage模拟数据共享
-        // 注意：在实际部署中，应使用服务器端数据库存储数据
+        // 存储所有调查数据
         let surveyData = [];
         let surveyChart;
         
@@ -710,11 +750,13 @@
         
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('页面加载完成，开始初始化...');
+            
             // 初始化标签页功能
             initTabs();
             
-            // 生成当前页面的二维码
-            generateQRCode();
+            // 尝试生成二维码
+            generateQRCodeWithFallback();
             
             // 尝试从localStorage加载之前保存的数据
             loadSurveyData();
@@ -722,24 +764,11 @@
             // 初始化图表
             initChart();
             
-            // 设置表单提交事件
-            document.getElementById('surveyForm').addEventListener('submit', handleSubmit);
+            // 设置事件监听器
+            setupEventListeners();
             
-            // 设置重置按钮事件
-            document.getElementById('resetBtn').addEventListener('click', resetForm);
-            
-            // 设置图表选择器事件
-            document.getElementById('chartSelect').addEventListener('change', updateCharts);
-            
-            // 设置刷新数据按钮事件
-            document.getElementById('refreshDataBtn').addEventListener('click', function() {
-                loadSurveyData();
-                updateCharts();
-                showNotification('数据已刷新！', '#1a6dcc');
-            });
-            
-            // 设置导出数据按钮事件
-            document.getElementById('exportDataBtn').addEventListener('click', exportDataToCSV);
+            // 显示当前URL
+            displayPageURL();
             
             // 初始更新图表
             updateCharts();
@@ -773,35 +802,133 @@
             });
         }
         
-        // 生成当前页面的二维码
-        function generateQRCode() {
-            // 获取当前页面的完整URL
+        // 带备用方案的二维码生成
+        function generateQRCodeWithFallback() {
+            console.log('开始生成二维码...');
             const pageUrl = window.location.href;
-            
-            // 生成二维码
             const qrcodeElement = document.getElementById('qrcode');
-            qrcodeElement.innerHTML = ''; // 清空之前的内容
             
-            QRCode.toCanvas(qrcodeElement, pageUrl, {
-                width: 180,
-                height: 180,
-                colorDark: "#1a6dcc",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.H
-            }, function(error) {
-                if (error) {
-                    console.error('生成二维码失败:', error);
-                    qrcodeElement.innerHTML = '<p style="color: red;">二维码生成失败，请手动访问：<br>' + pageUrl + '</p>';
+            // 显示当前URL
+            document.getElementById('page-url').textContent = pageUrl;
+            
+            // 方法1：使用QRCode.js库
+            try {
+                if (typeof QRCode !== 'undefined') {
+                    console.log('QRCode.js库可用，尝试生成二维码...');
+                    qrcodeElement.innerHTML = ''; // 清空之前的内容
+                    
+                    QRCode.toCanvas(qrcodeElement, pageUrl, {
+                        width: 160,
+                        height: 160,
+                        colorDark: "#1a6dcc",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.H
+                    }, function(error) {
+                        if (error) {
+                            console.error('QRCode.toCanvas失败:', error);
+                            showQRCodeFallback('二维码生成失败：' + error.message);
+                        } else {
+                            console.log('二维码生成成功！');
+                            // 隐藏备用方案
+                            document.getElementById('qrcode-fallback').style.display = 'none';
+                        }
+                    });
+                } else {
+                    console.warn('QRCode.js库未加载');
+                    showQRCodeFallback('二维码库加载失败');
+                }
+            } catch (error) {
+                console.error('生成二维码时发生错误:', error);
+                showQRCodeFallback('生成二维码时出错：' + error.message);
+            }
+        }
+        
+        // 显示二维码备用方案
+        function showQRCodeFallback(message) {
+            console.log('显示二维码备用方案:', message);
+            const qrcodeElement = document.getElementById('qrcode');
+            const fallbackElement = document.getElementById('qrcode-fallback');
+            
+            // 显示错误信息
+            qrcodeElement.innerHTML = `<div class="qrcode-error">${message}</div>`;
+            
+            // 显示备用方案
+            fallbackElement.style.display = 'block';
+        }
+        
+        // 显示当前页面URL
+        function displayPageURL() {
+            const pageUrl = window.location.href;
+            const urlElement = document.getElementById('page-url');
+            if (urlElement) {
+                // 如果是长URL，可以缩短显示
+                const displayUrl = pageUrl.length > 50 ? 
+                    pageUrl.substring(0, 50) + '...' : pageUrl;
+                urlElement.innerHTML = `<a href="${pageUrl}" target="_blank">${displayUrl}</a>`;
+            }
+        }
+        
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 表单提交事件
+            document.getElementById('surveyForm').addEventListener('submit', handleSubmit);
+            
+            // 重置按钮事件
+            document.getElementById('resetBtn').addEventListener('click', resetForm);
+            
+            // 图表选择器事件
+            document.getElementById('chartSelect').addEventListener('change', updateCharts);
+            
+            // 刷新数据按钮事件
+            document.getElementById('refreshDataBtn').addEventListener('click', function() {
+                loadSurveyData();
+                updateCharts();
+                showNotification('数据已刷新！', '#1a6dcc');
+            });
+            
+            // 清空数据按钮事件
+            document.getElementById('clearDataBtn').addEventListener('click', function() {
+                if (confirm('确定要清空所有数据吗？此操作不可撤销。')) {
+                    localStorage.removeItem('breakfastSurveyData');
+                    surveyData = [];
+                    updateTotalResponses();
+                    updateCharts();
+                    showNotification('数据已清空！', '#ff6b6b');
                 }
             });
+            
+            // 导出数据按钮事件
+            document.getElementById('exportDataBtn').addEventListener('click', exportDataToCSV);
+            
+            // 复制链接按钮事件
+            document.getElementById('copy-url-btn').addEventListener('click', function() {
+                const pageUrl = window.location.href;
+                navigator.clipboard.writeText(pageUrl).then(() => {
+                    showNotification('链接已复制到剪贴板！', '#4caf50');
+                }).catch(err => {
+                    console.error('复制失败:', err);
+                    showNotification('复制失败，请手动复制链接', '#ff6b6b');
+                });
+            });
+            
+            // 重新生成二维码按钮事件
+            document.getElementById('regenerate-qrcode-btn')?.addEventListener('click', generateQRCodeWithFallback);
         }
         
         // 加载调查数据
         function loadSurveyData() {
-            const savedData = localStorage.getItem('breakfastSurveyData');
-            if (savedData) {
-                surveyData = JSON.parse(savedData);
-                updateTotalResponses();
+            try {
+                const savedData = localStorage.getItem('breakfastSurveyData');
+                if (savedData) {
+                    surveyData = JSON.parse(savedData);
+                    console.log(`从localStorage加载了${surveyData.length}条数据`);
+                    updateTotalResponses();
+                } else {
+                    console.log('localStorage中没有找到数据');
+                }
+            } catch (error) {
+                console.error('加载数据失败:', error);
+                surveyData = [];
             }
         }
         
@@ -894,7 +1021,14 @@
             surveyData.push(data);
             
             // 保存到localStorage
-            localStorage.setItem('breakfastSurveyData', JSON.stringify(surveyData));
+            try {
+                localStorage.setItem('breakfastSurveyData', JSON.stringify(surveyData));
+                console.log('数据已保存到localStorage');
+            } catch (error) {
+                console.error('保存数据失败:', error);
+                showNotification('数据保存失败，请重试！', '#ff6b6b');
+                return;
+            }
             
             // 更新UI
             updateTotalResponses();
@@ -1175,6 +1309,9 @@
     <div style="position: fixed; bottom: 20px; left: 20px; z-index: 1000;">
         <button onclick="addSampleData()" style="background-color: #4a9eff; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-size: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
             添加示例数据
+        </button>
+        <button onclick="generateQRCodeWithFallback()" style="background-color: #06d6a0; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-size: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); margin-left: 5px;">
+            重新生成二维码
         </button>
     </div>
 </body>
